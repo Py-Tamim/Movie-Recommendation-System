@@ -33,3 +33,28 @@ for g in [genre, sub1, sub2]:
             exit()
         ids.append(str(genre_ids[clean(g)]))
 
+movies = []                      # Ask the API for movies (3 pages = 60 movies), best rated first
+for page in [1, 2, 3]:
+    params = {
+        "api_key": API_KEY,
+        "with_genres": ",".join(ids),
+        "sort_by": "vote_average.desc",
+        "vote_count.gte": 1000,
+        "page": page,
+    }
+    data = requests.get("https://api.themoviedb.org/3/discover/movie", params=params).json()
+    movies += data.get("results", [])
+if not movies:
+    print("\nNo movies found. Check your API key or try different genres.")
+    exit()
+
+result = pd.DataFrame(movies)
+
+if desc:                       # If a description is given, rank by similarity. Otherwise keep the rating order.
+    texts = result["overview"].fillna("").tolist() + [desc]
+    matrix = TfidfVectorizer(stop_words="english").fit_transform(texts)
+    result["score"] = cosine_similarity(matrix[-1], matrix[:-1])[0]
+    result = result.sort_values("score", ascending=False)
+
+
+print("\nTop movie predictions for you:")
