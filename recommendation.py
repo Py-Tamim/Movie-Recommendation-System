@@ -58,3 +58,29 @@ if desc:                       # If a description is given, rank by similarity. 
 
 
 print("\nTop movie predictions for you:")
+
+start = 0                     # For continious Searching Movie
+while True:
+    batch = result.iloc[start:start + 5]
+
+    if batch.empty:
+        print("\nNo more movies to show.")
+        break
+
+    for _, row in batch.iterrows():
+        print(f"\n{row['title']} ({round(row['vote_average'], 1)}/10):")
+        print(row["overview"])
+
+    start += 5
+
+    answer = ""
+    while answer not in ["yes", "no"]:
+        answer = input("\nDo you need more suggestion (yes/ no): ").strip().lower()
+
+    if answer == "no":
+        break
+
+# Wait until the Esc key is pressed
+print('\nPress "Esc" to exit.')
+while msvcrt.getch() != b"\x1b":
+    pass
